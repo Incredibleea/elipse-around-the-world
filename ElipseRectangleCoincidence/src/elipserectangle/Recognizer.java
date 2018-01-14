@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Recognizer class is responisble for recognize shapes
+ * Recognizer class is responsible for recognize shapes
  */
 
 class Point {
