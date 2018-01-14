@@ -54,6 +54,14 @@ public class PixelArray {
 		return this.pixelArray;
 	}
 	
+	public int getWidth() {
+		return this.width;
+	}
+	
+	public int getHeight() {
+		return this.height;
+	}
+	
 	public void printPixelArray() {
 		for (int j = 0; j < width; j++) {
 			System.out.println();
