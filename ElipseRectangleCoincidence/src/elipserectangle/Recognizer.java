@@ -20,21 +20,35 @@ class Point {
 	}
 }
 
+class Rectangle {
+	Point upperLeftCorner  = null;
+	Point lowerRightCorner = null;
+	
+	Rectangle( Point a, Point b ) {
+		this.upperLeftCorner = a;
+		this.lowerRightCorner = b;
+	}
+}
+
 public class Recognizer {
-	PixelArray pa = PixelArray.getInstance();
-	int[][] array = pa.getPixelArray();
-	int width = pa.getWidth();
-	int height = pa.getHeight();
-	List<Point> ul;
-	List<Point> ur;
-	List<Point> ll;
-	List<Point> lr;
+	private PixelArray pa = PixelArray.getInstance();
+	private int[][] array = pa.getPixelArray();
+	private int width = pa.getWidth();
+	private int height = pa.getHeight();
+	private List<Point> ul;						// list of upper left corners
+	private List<Point> ur;						// list of upper right corners
+	private List<Point> ll;						// list of lower left corners
+	private List<Point> lr;						// list of lower right corners
+	
+	private List<Rectangle> rectangles;			// list of found rectangles
 	
 	public Recognizer() {
 		ul = new ArrayList<>();
 		ur = new ArrayList<>();
 		ll = new ArrayList<>();
 		lr = new ArrayList<>();
+		
+		rectangles = new ArrayList<>();
 	}
 	
 	public void recognizeRectangle() {
@@ -54,7 +68,6 @@ public class Recognizer {
 		     && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
 		     && l+2 < width  && array[k][l+1] == 1 && array[k][l+2] == 1 ) {
 			ul.add(new Point(k,l));
-			//array[k][l] += 1;
 		}
 	}
 	
@@ -63,7 +76,6 @@ public class Recognizer {
 			 && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
 			 && l-2 >= 0      && array[k][l-1] == 1 && array[k][l-2] == 1) {
 			ur.add(new Point(k,l));
-			//array[k][l] += 2;
 		}
 	}
 	
@@ -72,7 +84,6 @@ public class Recognizer {
 			 && k-2 >= 0     && array[k-1][l] == 1 && array[k-2][l] == 1
 			 && l+2 < width && array[k][l+1] == 1 && array[k][l+2] == 1) {
 			ll.add(new Point(k,l));
-			//array[k][l] += 3;
 		}
 	}
 
@@ -81,7 +92,6 @@ public class Recognizer {
 			 && k-2 >= 0     && array[k-1][l] == 1 && array[k-2][l] == 1
 			 && l-2 >= 0     && array[k][l-1] == 1 && array[k][l-2] == 1) {
 			lr.add(new Point(k,l));
-			//array[k][l] += 4;
 		}
 	}
 	
@@ -89,31 +99,49 @@ public class Recognizer {
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
-			System.out.println("Parsing: ");
-			pul.printPoint();
+			//System.out.println("\nParsing: ");
+			//pul.printPoint();
 			int ill = findL(ll, pul.l);
 			if( ill != -1 ) {
 				pll = ll.get(ill);
-				int iur = findK(ur, pul.k);		// to powinno zwracac tablice wszystkich znalezionych
-				int ilr = findK(lr, pll.k);
-				if ( iur != -1 && ilr != -1) {
-					Point pur = ur.get(iur);
-					Point plr = lr.get(ilr);
-					if ( pur.l == plr.l ) {
-						System.out.println("\nZnaleziono prostokat");
-						pul.printPoint();
-						pur.printPoint();
-						pll.printPoint();
-						plr.printPoint();
-						ul.remove(i);
-						ur.remove(iur);
-						ll.remove(ill);
-						lr.remove(ilr);
-						i--;
+				
+				List<Integer> iur = findK(ur, pul.k);		// to powinno zwracac tablice wszystkich znalezionych
+				List<Integer> ilr = findK(lr, pll.k);
+				
+				for ( int x = 0; x < iur.size(); x++ ) {
+					for ( int y = 0; y < ilr.size(); y++ ) {
+						Point pur = ur.get(iur.get(x));
+						Point plr = lr.get(ilr.get(y));
+						if ( pur.l == plr.l ) {
+							// debugging, remove.
+							System.out.println("\nZnaleziono prostokat");
+							pul.printPoint();
+							pur.printPoint();
+							pll.printPoint();
+							plr.printPoint();
+							
+							rectangles.add(new Rectangle(pul, plr));
+							ul.remove(i);
+							ur.remove((int)iur.get(x));
+							iur.remove(x);
+							ll.remove(ill);
+							lr.remove((int)ilr.get(y));
+							ilr.remove(y);
+							i--;
+							break;
+						}
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Funkcja "kolorujaca" prostokat (1 -> 2)
+	 * @param r
+	 */
+	private void colorRectangle( Rectangle r ) {
+		
 	}
 	
 	/*
@@ -164,15 +192,16 @@ public class Recognizer {
 			return false;
 	}
 	*/
-
-	private int findK( List<Point> l, int k) {
+	
+	private List<Integer> findK( List<Point> l, int k) {
+		List<Integer> val = new ArrayList<>();
 		for( int i = 0; i < l.size(); i++) {
 			if ( l.get(i).k == k ) {
-				return i;
+				val.add(i);
 			}
 		}
-		System.out.println("Nie znaleziono k: " + k);
-		return -1;
+		//System.out.println("\nNie znaleziono k: " + k);
+		return val;
 	}
 	
 	private int findL( List<Point> lst, int l) {
@@ -193,15 +222,19 @@ public class Recognizer {
 	}
 	
 	public void print() {
-		for (int j = 0; j < pa.getWidth(); j++) {
+		/*for (int j = 0; j < pa.getWidth(); j++) {
 			System.out.println();
 		    for (int k = 0; k < pa.getHeight(); k++) {
 		        System.out.print(array[j][k]);
 		    }
-		}
+		}*/
+		System.out.println("\nFound unused UL corners");
 		printList(ul);
+		System.out.println("Found unused UR corners");
 		printList(ur);
+		System.out.println("Found unused LL corners");
 		printList(ll);
+		System.out.println("Found unused LR corners");
 		printList(lr);
 	}
 }

@@ -17,7 +17,7 @@ public class PixelArray {
 	
 	private PixelArray() {
 		try {
-			Image image = ImageIO.read(new File("pictures/05.bmp"));
+			Image image = ImageIO.read(new File("pictures/01.bmp"));
 			BufferedImage img = new BufferedImage(image.getWidth(null),
 												  image.getHeight(null),
 												  BufferedImage.TYPE_BYTE_GRAY);
@@ -29,8 +29,6 @@ public class PixelArray {
 			
 			this.width  = img.getWidth();
 			this.height = img.getHeight();
-			
-			System.out.println("w: " + this.width + " h: " + this.height);
 			
 			pixelArray = new int[width][height];
 			

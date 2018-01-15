@@ -8,8 +8,6 @@ public class Start {
 		
 		Recognizer r = new Recognizer();
 		r.recognizeRectangle();
-		
-		System.out.println();
 		r.print();
 	}
 }
