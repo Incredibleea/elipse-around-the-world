@@ -46,13 +46,13 @@ public class Recognizer {
 				isLowerRightCorner(i,j);
 			}
 		}
+		markEdges();
 	}
 	
 	private void isUpperLeftCorner(int k, int l) {
-		if ( k+1 < pa.getHeight() && l+1 < pa.getWidth() 
-		     && array[k][l] == 1 
-		     && k+2 <= height && array[k+1][l] == 1 && array[k+2][l] == 1
-		     && l+2 <= width  &&array[k][l+1] == 1 && array[k][l+2] == 1 ) {
+		if ( array[k][l] == 1 
+		     && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
+		     && l+2 < width  && array[k][l+1] == 1 && array[k][l+2] == 1 ) {
 			ul.add(new Point(k,l));
 			//array[k][l] += 1;
 		}
@@ -60,7 +60,7 @@ public class Recognizer {
 	
 	private void isUpperRightCorner(int k, int l) {
 		if ( array[k][l] == 1
-			 && k+2 <= height && array[k+1][l] == 1 && array[k+2][l] == 1
+			 && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
 			 && l-2 >= 0      && array[k][l-1] == 1 && array[k][l-2] == 1) {
 			ur.add(new Point(k,l));
 			//array[k][l] += 2;
@@ -70,7 +70,7 @@ public class Recognizer {
 	private void isLowerLeftCorner(int k, int l) {
 		if ( array[k][l] == 1
 			 && k-2 >= 0     && array[k-1][l] == 1 && array[k-2][l] == 1
-			 && l+2 <= width && array[k][l+1] == 1 && array[k][l+2] == 1) {
+			 && l+2 < width && array[k][l+1] == 1 && array[k][l+2] == 1) {
 			ll.add(new Point(k,l));
 			//array[k][l] += 3;
 		}
@@ -88,23 +88,29 @@ public class Recognizer {
 	private void markEdges() {
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
+			Point pll;
+			System.out.println("Parsing: ");
+			pul.printPoint();
 			int ill = findL(ll, pul.l);
-			Point pll = ll.get(ill);
-			int iur = findK(ur, pul.k);
-			int ilr = findK(lr, pll.k);
-			if ( iur != -1 && ilr != -1) {
-				Point pur = ur.get(iur);
-				Point plr = lr.get(ilr);
-				if ( pur.l == plr.l ) {
-					System.out.println("Znaleziono prostokat");
-					pul.printPoint();
-					pur.printPoint();
-					pll.printPoint();
-					plr.printPoint();
-					ul.remove(i);
-					ur.remove(iur);
-					ll.remove(ill);
-					lr.remove(ilr);
+			if( ill != -1 ) {
+				pll = ll.get(ill);
+				int iur = findK(ur, pul.k);		// to powinno zwracac tablice wszystkich znalezionych
+				int ilr = findK(lr, pll.k);
+				if ( iur != -1 && ilr != -1) {
+					Point pur = ur.get(iur);
+					Point plr = lr.get(ilr);
+					if ( pur.l == plr.l ) {
+						System.out.println("\nZnaleziono prostokat");
+						pul.printPoint();
+						pur.printPoint();
+						pll.printPoint();
+						plr.printPoint();
+						ul.remove(i);
+						ur.remove(iur);
+						ll.remove(ill);
+						lr.remove(ilr);
+						i--;
+					}
 				}
 			}
 		}
@@ -165,6 +171,7 @@ public class Recognizer {
 				return i;
 			}
 		}
+		System.out.println("Nie znaleziono k: " + k);
 		return -1;
 	}
 	
@@ -174,6 +181,7 @@ public class Recognizer {
 				return i;
 			}
 		}
+		System.out.println("Nie znaleziono l: " + l);
 		return -1;
 	}
 	
