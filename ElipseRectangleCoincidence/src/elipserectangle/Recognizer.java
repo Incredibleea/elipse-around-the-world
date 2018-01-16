@@ -144,55 +144,6 @@ public class Recognizer {
 		
 	}
 	
-	/*
-	private boolean isRectangle( int k, int l ) {
-		int hght = 0;
-		int wdth = 0;
-		// upper edge
-		for( int i = k; i < pa.getWidth(); i++ ) {
-			if ( isUpperRightCorner(i,l) ) {
-				hght++;
-				break;
-			}			
-			if ( array[i][l] == 1 )
-				hght++;
-			else
-				break;
-		}
-		
-		// left edge
-		for( int j = l; j < pa.getHeight(); j++ ) {
-			if( isLowerLeftCorner(k,j) ) {
-				wdth++;
-				break;
-			}
-			if ( array[k][j] == 1 ) {
-				wdth++;
-			}
-			else
-				break;
-		}
-		
-		if ( hght >= 2 && wdth >= 2 ) {
-			// mark horizontal edges
-			for( int i = k; i < (k + hght); ++i ) {
-				array[i][l] 	 = 2;
-				array[i][l+wdth-1] = 2;
-			}
-			// mark vertical edges
-			for( int i = l; i < (l+wdth); ++i ) {
-				array[k+hght-1][i] = 2;
-				array[k][i] 	 = 2;
-			}
-			
-			System.out.println("height: " + hght + ", weigth: " + wdth);
-			return true;
-		}
-		else
-			return false;
-	}
-	*/
-	
 	private List<Integer> findK( List<Point> l, int k) {
 		List<Integer> val = new ArrayList<>();
 		for( int i = 0; i < l.size(); i++) {
@@ -236,5 +187,15 @@ public class Recognizer {
 		printList(ll);
 		System.out.println("Found unused LR corners");
 		printList(lr);
+	}
+
+	public void recognizeElipse() {
+		/* okno 3x3
+		[k-1][l-1]	[k-1][l]	[k-1][l+1]
+		
+		[k]  [l-1]	[k]  [l]	[k]  [l+1]
+		
+		[k+1][l-1]	[k+1][l]	[k+1][l+1]
+		*/
 	}
 }
