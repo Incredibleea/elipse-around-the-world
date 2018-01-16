@@ -96,6 +96,9 @@ public class Recognizer {
 	}
 	
 	private void markEdges() {
+		
+		int currentRect = 0;
+		
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
@@ -121,6 +124,11 @@ public class Recognizer {
 							plr.printPoint();
 							
 							rectangles.add(new Rectangle(pul, plr));
+							System.out.println(currentRect);
+							
+							colorRectangle(rectangles.get(currentRect));
+							currentRect+=1;
+							
 							ul.remove(i);
 							ur.remove((int)iur.get(x));
 							iur.remove(x);
@@ -141,7 +149,23 @@ public class Recognizer {
 	 * @param r
 	 */
 	private void colorRectangle( Rectangle r ) {
+
+		for (int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++) {
+			array[r.upperLeftCorner.k+i][r.upperLeftCorner.l] += 1;
+			array[r.lowerRightCorner.k-i][r.lowerRightCorner.l] += 1;
+		}
 		
+		for (int i = 1; i < r.lowerRightCorner.l - r.upperLeftCorner.l; i++) {
+			array[r.upperLeftCorner.k][r.upperLeftCorner.l+i] += 1;
+			array[r.lowerRightCorner.k][r.lowerRightCorner.l-i] += 1;
+		}
+		
+//		for (int j = 0; j < width; j++) {
+//			System.out.println();
+//		    for (int k = 0; k < height; k++) {
+//		        System.out.print(array[j][k]);
+//		    }
+//		}
 	}
 	
 	private List<Integer> findK( List<Point> l, int k) {
