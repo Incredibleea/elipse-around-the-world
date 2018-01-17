@@ -52,8 +52,8 @@ public class Recognizer {
 	}
 	
 	public void recognizeRectangle() {
-		for( int j = 0; j < pa.getWidth(); j++ ) {
-			for( int i = 0; i < pa.getHeight(); i++ ) {
+		for( int j = 0; j < height; j++ ) {
+			for( int i = 0; i < width; i++ ) {
 				isUpperLeftCorner(i,j);
 				isUpperRightCorner(i,j);
 				isLowerLeftCorner(i,j);
@@ -188,14 +188,334 @@ public class Recognizer {
 		System.out.println("Found unused LR corners");
 		printList(lr);
 	}
+	
+	
+	/*
+	array[tk-1][tl-1] tk = tk-1; tl = tl-1;	array[tk-1][l] tk = tk-1;	array[tk-1][tl+1] tk = tk-1; tl = tl+1;
+	
+	array[tk][tl-1] tl = tl-1;				array[tk][tl]				array[tk][tl+1] tl = tl+1;
+	
+	array[tk+1][tl-1] tk = tk+1; tl = tl-1;	array[tk+1][tl]	tk = tk+1; 	array[tk+1][tl+1] tk = tk+1; tl = tl+1;
+	*/
+	
+	/*
+	 && tk-1 >= 0
+	 && tk+1 < height
+	 && tl-1 >= 0
+	 && tl+1 < width
+	 */
 
 	public void recognizeElipse() {
-		/* okno 3x3
-		[k-1][l-1]	[k-1][l]	[k-1][l+1]
+		int tk  = 0;	// temporary value used in iterations
+		int tl  = 0;	// temporary value used in iterations
+		int ttk = 0;	// temporary value used in condition with last marked pixel
+		int ttl = 0;	// temporary value used in condition with last marked pixel
+		int tempTK = 0;	// temporary value used to store tk value;
+		int tempTL = 0; // temporary value used to store tl value;
+		boolean flag = false;	// flag indicating if the neighbor of currently parsed pixel is closing the shape
 		
-		[k]  [l-1]	[k]  [l]	[k]  [l+1]
+		int licz = 0;
 		
-		[k+1][l-1]	[k+1][l]	[k+1][l+1]
-		*/
+		for ( int k = 0; k < height; k++ ) {
+			for ( int l = 0; l < width; l++ ) {
+				if ( array[k][l] == 1 ) {
+					
+					licz ++;
+					
+					int iter = 0;
+					flag = false;
+					
+					tk = k;
+					tl = l;
+					
+					System.out.println("Start parsowania: " + tl + ". " + tk);
+					
+					array[tk][tl] += 2;
+					ttk = tk;	// one before last marked pixel
+					ttl = tl;	// one before last marked pixel
+					
+					// mark second pixel to state the direction
+					
+					if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) {
+						array[tk-1][tl+1] += 2;
+						tk = tk-1;
+						tl = tl+1;
+					}
+					else if ( tl+1 < width && array[tk][tl+1] == 1 ) {
+						array[tk][tl+1] += 2;
+						tl = tl+1;
+					}
+					else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1 ) {
+						array[tk+1][tl+1] += 2;
+						tk = tk+1;
+						tl = tl+1;
+					}
+					else if ( tk+1 < height && array[tk+1][tl] == 1 ) {
+						array[tk+1][tl] += 2;
+						tk = tk+1;
+					}
+					else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {
+						array[tk+1][tl-1] += 2;
+						tk = tk+1;
+						tl = tl-1;
+					
+					}
+					
+					// higher probability could be made by parsing one before last frame
+					
+					do {
+						tempTK = tk;		// store index of currently parsed pixel for future use as one before last parsed pixel
+						tempTL = tl;
+						
+						// Check if current pixel(tk,tl) is the neighbor of start pixel (k,l)
+						// iter > 1 is needed due to the fact that lastly parsed pixel was start pixel
+						if ( iter > 1 && (( tk-1 == k && tl-1 == l ) ||
+								 ( tk-1 == k && tl == l ) ||
+								 ( tk-1 == k && tl+1 == l ) ||
+								 ( tk == k && tl+1 == l ) ||
+								 ( tk+1 == k && tl+1 == l ) ||
+								 ( tk+1 == k && tl == l ) ||
+								 ( tk+1 == k && tl-1 == l ) ||
+								 ( tk == k && tl - 1 == l ))) {
+								flag = true;
+								System.out.println("Zamknieto figure przed czasem: " + tl + ", " +  tk);
+								break;
+							}
+						
+						// Upper left
+						if ( ttk == tk -1 && ttl == tl -1) {
+							if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
+								array[tk+1][tl+1] += 2;
+								tk = tk+1;
+								tl = tl+1;
+							}
+							else if ( tl+1 < width && array[tk][tl+1] == 1 && tl+1 < width ) {	// Right
+								array[tk][tl+1] += 2;
+								tl = tl+1;
+							}
+							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {					// Lower
+								array[tk+1][tl] += 2;
+								tk = tk+1;
+							}
+							else {
+								System.out.println("UL ZGUBILEM SIE");
+							}
+						}
+						
+						// Upper
+						else if ( ttk == tk-1 && ttl == tl ) {
+							if ( tk+1 < height && array[tk+1][tl] == 1 ) {							// Lower		
+								array[tk+1][tl] += 2;
+								tk = tk+1;
+							}
+							else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {		// Lower left
+								array[tk+1][tl-1] += 2;
+								tk = tk+1;
+								tl = tl-1;
+							}
+							else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
+								array[tk+1][tl+1] += 2;
+								tk = tk+1;
+								tl = tl+1;
+							}
+							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {							// Left
+								array[tk][tl-1] += 2;
+								tl = tl-1;
+							}
+							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {						// Right
+								array[tk][tl+1] += 2;
+								tl = tl+1;
+							}
+							else {
+								System.out.println("U ZGUBILEM SIE");
+							}
+							
+						}
+						
+						// Upper right
+						else if ( ttk == tk-1 && ttl == tl + 1) {
+							if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {	// Lower left
+								array[tk+1][tl-1] += 2;
+								tk = tk+1;
+								tl = tl-1;
+							}
+							else if ( array[tk][tl-1] == 1&& tl-1 >= 0  ) {					// Left
+								array[tk][tl-1] += 2;
+								tl = tl-1;
+							}
+							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {				// Lower
+								array[tk+1][tl] += 2;
+								tk = tk+1;
+							}
+							else {
+								System.out.println("UR ZGUBILEM SIE");
+							}
+						}
+						
+						// Right
+						else if ( ttk == tk  && ttl == tl+1 ) {
+							if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {							// Left
+								array[tk][tl-1] += 2;
+								tl = tl-1;
+							}
+							else if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1 ) {		// Upper left
+								array[tk-1][tl-1] += 2;
+								tk = tk-1;
+								tl = tl-1;
+							}
+							else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {	// Lower left
+								array[tk+1][tl-1] += 2;
+								tk = tk+1;
+								tl = tl-1;
+							}
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {						// Upper
+								array[tk-1][tl] += 2;
+								tk = tk-1;
+							}
+							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {					// Lower
+								array[tk+1][tl] += 2;
+								tk = tk+1;
+							}
+							else {
+								System.out.println("R ZGUBILEM SIE");
+							}
+						}
+
+						// Lower right
+						else if ( ttk == tk+1 && ttl == tl+1 ) {
+							if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1) {	// Upper left
+								array[tk-1][tl-1] += 2;
+								tk = tk-1;
+								tl = tl-1;
+							}
+							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {				// Left
+								array[tk][tl-1] += 2;
+								tl = tl-1;
+							}
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {				// Upper
+								array[tk-1][tl] += 2;
+								tk = tk-1;
+							}
+							else {
+								System.out.println("LR ZGUBILEM SIE " + tk + ", " + tl + ", " + array[tk-1][tl]);
+							}
+						}
+
+						// Lower
+						else if ( ttk == tk+1 && ttl == tl ) {
+							if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {							// Upper
+								array[tk-1][tl] += 2;
+								tk = tk-1;
+							}
+							else if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1 ) {		// Upper left
+								array[tk-1][tl-1] += 2;
+								tk = tk-1;
+								tl = tl-1;
+							}
+							else if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 	// Upper right
+								array[tk-1][tl+1] += 2;
+								tk = tk-1;
+								tl = tl+1;
+							}
+							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {						// Left
+								array[tk][tl-1] += 2;
+								tl = tl-1;
+							}
+							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {					// Right
+								array[tk][tl+1] += 2;
+								tl = tl+1;
+							}
+							else {
+								System.out.println("Lo ZGUBILEM SIE");
+							}
+						}
+
+						// Lower left
+						else if ( ttk == tk+1 && ttl == tl-1 ) {
+							if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 	// Upper right
+								array[tk-1][tl+1] += 2;
+								tk = tk-1;
+								tl = tl+1;
+							}
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {					// Upper
+								array[tk-1][tl] += 2;
+								tk = tk-1;
+							}
+							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {				// Right
+								array[tk][tl+1] += 2;
+								tl = tl+1;
+							}
+							else {
+								System.out.println("LL ZGUBILEM SIE");
+							}
+						}
+						
+						/*
+						array[tk-1][tl-1] tk = tk-1; tl = tl-1;	array[tk-1][l] tk = tk-1;	array[tk-1][tl+1] tk = tk-1; tl = tl+1;
+						
+						array[tk][tl-1] tl = tl-1;				array[tk][tl]				array[tk][tl+1] tl = tl+1;
+						
+						array[tk+1][tl-1] tk = tk+1; tl = tl-1;	array[tk+1][tl]	tk = tk+1; 	array[tk+1][tl+1] tk = tk+1; tl = tl+1;
+						*/
+
+						// Left
+						else if ( ttk == tk && ttl == tl-1 ) {
+							if ( tl+1 < width && array[tk][tl+1] == 1 ) {							// Right
+								array[tk][tl+1] += 2;
+								tl = tl+1;
+							}
+							else if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 		// Upper right
+								array[tk-1][tl+1] += 2;
+								tk = tk-1;
+								tl = tl+1;
+							}
+							else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
+								array[tk+1][tl+1] += 2;
+								tk = tk+1;
+								tl = tl+1;
+							}
+							else if ( tk-1 >= 0 && array[tk-1][l] == 1  ) {							// Upper
+								array[tk-1][tl] += 2;
+								tk = tk-1;
+							}
+							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {						// Lower
+								array[tk+1][tl] += 2;
+								tk = tk+1;
+							}
+							else {
+								System.out.println("L ZGUBILEM SIE " + tl + ", " + tk + ", " + (tk-1) + ", " + array[tk-1][l]);
+							}
+						}
+						else {
+							if ( iter == 13) {
+							System.out.println("CENTRAL ZGUBILEM SIE " + tl + ", " + tk + " ttk= " + ttk + " ttl= " + ttl);
+							}
+						}
+						
+						ttk = tempTK;
+						ttl = tempTL;
+						
+						iter++;
+						
+						/*if ( iter > 1 && (tk == k || tk+1 == k || tk-1 == k) && (tl == l || tl-1 == l || tl+1 ==l) ) {
+							flag = true;
+							System.out.println("Zamknieto figure przed czasem");
+						}*/
+						
+
+						
+					}
+					while ( flag != true && iter < 100);		// zakladam, ze robimy okrazenie i wyladujemy w tym samym punkcie
+					System.out.println("Koniec parsowania: " + tl + ". " + tk);
+				}
+			}
+		}
+		for (int j = 0; j < pa.getWidth(); j++) {
+			System.out.println();
+		    for (int k = 0; k < pa.getHeight(); k++) {
+		        System.out.print(array[j][k]);
+		    }
+		}
+		System.out.println("\nRozpoczeto parsowanie: " + licz + " razy.");
 	}
 }
