@@ -127,6 +127,7 @@ public class Recognizer {
 							System.out.println(currentRect);
 							
 							colorRectangle(rectangles.get(currentRect));
+							if (currentRect == 3) moveRectangle(rectangles.get(currentRect), 20, -20);
 							currentRect+=1;
 							
 							ul.remove(i);
@@ -149,16 +150,22 @@ public class Recognizer {
 	 * @param r
 	 */
 	private void colorRectangle( Rectangle r ) {
-
-		for (int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++) {
-			array[r.upperLeftCorner.k+i][r.upperLeftCorner.l] += 1;
-			array[r.lowerRightCorner.k-i][r.lowerRightCorner.l] += 1;
-		}
 		
-		for (int i = 1; i < r.lowerRightCorner.l - r.upperLeftCorner.l; i++) {
-			array[r.upperLeftCorner.k][r.upperLeftCorner.l+i] += 1;
-			array[r.lowerRightCorner.k][r.lowerRightCorner.l-i] += 1;
+		for( int j = 0; j <= r.lowerRightCorner.l - r.upperLeftCorner.l; j++ ) {
+			for( int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++ ) {
+				if (array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] == 1) array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] += 1;
+			}
 		}
+
+//		for (int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++) {
+//			array[r.upperLeftCorner.k+i][r.upperLeftCorner.l] += 1;
+//			array[r.lowerRightCorner.k-i][r.lowerRightCorner.l] += 1;
+//		}
+//		
+//		for (int i = 1; i < r.lowerRightCorner.l - r.upperLeftCorner.l; i++) {
+//			array[r.upperLeftCorner.k][r.upperLeftCorner.l+i] += 1;
+//			array[r.lowerRightCorner.k][r.lowerRightCorner.l-i] += 1;
+//		}
 		
 //		for (int j = 0; j < width; j++) {
 //			System.out.println();
@@ -166,6 +173,36 @@ public class Recognizer {
 //		        System.out.print(array[j][k]);
 //		    }
 //		}
+	}
+	
+	/**
+	 * Metoda do przesuwania prostokata
+	 * 
+	 * @param r obiekt przesuwanego prostokata, moze trzeba bedzie dodac jakis parametr do obiektu, ktory go zidentyfikuje?
+	 * @param moveX przesuniecie o x
+	 * @param moveY przesuniecie o y
+	 */
+	private void moveRectangle( Rectangle r, int moveX, int moveY ) {
+		
+		if (r.upperLeftCorner.l + moveY > 99 || r.upperLeftCorner.l + moveY < 0 || r.lowerRightCorner.l + moveY > 99 || r.lowerRightCorner.l + moveY < 0) {
+			System.out.println("WARNING! Cannot move " + r + "! Index Y out of band!");
+		} else if (r.upperLeftCorner.k + moveX > 99 || r.upperLeftCorner.k + moveX < 0 || r.lowerRightCorner.k + moveX > 99 || r.lowerRightCorner.k + moveX < 0) {
+			System.out.println("WARNING! Cannot move " + r + "! Index X out of band!");
+		} else {
+			for( int j = 0; j <= r.lowerRightCorner.l - r.upperLeftCorner.l; j++ ) {
+				for( int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++ ) {
+					array[r.upperLeftCorner.k+i+moveX][r.upperLeftCorner.l+j+moveY] += array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j];
+					array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] = 0;
+				}
+			}
+		}
+		
+		for (int j = 0; j < width; j++) {
+			System.out.println();
+		    for (int k = 0; k < height; k++) {
+		        System.out.print(array[j][k]);
+		    }
+		}
 	}
 	
 	private List<Integer> findK( List<Point> l, int k) {
