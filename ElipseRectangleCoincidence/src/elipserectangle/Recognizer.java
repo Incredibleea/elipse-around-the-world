@@ -368,7 +368,7 @@ public class Recognizer {
 								tk = tk+1;
 								tl = tl-1;
 							}
-							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {						// Upper
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {					// Upper
 								array[tk-1][tl] += 2;
 								tk = tk-1;
 							}
@@ -392,7 +392,7 @@ public class Recognizer {
 								array[tk][tl-1] += 2;
 								tl = tl-1;
 							}
-							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {				// Upper
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {			// Upper
 								array[tk-1][tl] += 2;
 								tk = tk-1;
 							}
@@ -437,7 +437,7 @@ public class Recognizer {
 								tk = tk-1;
 								tl = tl+1;
 							}
-							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {					// Upper
+							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {				// Upper
 								array[tk-1][tl] += 2;
 								tk = tk-1;
 							}
@@ -449,14 +449,6 @@ public class Recognizer {
 								System.out.println("LL ZGUBILEM SIE");
 							}
 						}
-						
-						/*
-						array[tk-1][tl-1] tk = tk-1; tl = tl-1;	array[tk-1][l] tk = tk-1;	array[tk-1][tl+1] tk = tk-1; tl = tl+1;
-						
-						array[tk][tl-1] tl = tl-1;				array[tk][tl]				array[tk][tl+1] tl = tl+1;
-						
-						array[tk+1][tl-1] tk = tk+1; tl = tl-1;	array[tk+1][tl]	tk = tk+1; 	array[tk+1][tl+1] tk = tk+1; tl = tl+1;
-						*/
 
 						// Left
 						else if ( ttk == tk && ttl == tl-1 ) {
@@ -505,7 +497,7 @@ public class Recognizer {
 
 						
 					}
-					while ( flag != true && iter < 100);		// zakladam, ze robimy okrazenie i wyladujemy w tym samym punkcie
+					while ( flag != true && iter < 100);		// zakladam, ze robimy okrazenie i wyladujemy w tym samym punkcie, iter mozna bedzie wyrzucic
 					System.out.println("Koniec parsowania: " + tl + ". " + tk);
 				}
 			}
