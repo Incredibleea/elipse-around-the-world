@@ -475,7 +475,7 @@ public class Recognizer {
 								tk = tk+1;
 							}
 							else {
-								System.out.println("L ZGUBILEM SIE " + tl + ", " + tk + ", " + (tk-1) + ", " + array[tk-1][l]);
+								System.out.println("L ZGUBILEM SIE " + tl + ", " + tk + ", " + (tk-1) + ", " + array[tk-1][tl]);
 							}
 						}
 						else {
