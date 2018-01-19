@@ -8,10 +8,7 @@ public class Start {
 		
 		Recognizer r = new Recognizer();
 		r.recognizeRectangle();
-		
-		r.recognizeElipse();
-		//r.moveRectangle(r.rectangles.get(2), 20, 20);
-		
 		r.print();
+		r.recognizeElipse();
 	}
 }
