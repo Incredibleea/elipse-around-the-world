@@ -47,12 +47,27 @@ class Rectangle {
 
 class Shape {
 	public List<Point> lst;
+	public int maxW;
+	public int minW;
+	public int maxH;
+	public int minH;
  	
  	Shape ( ) {
  		this.lst = new ArrayList<>();
+ 		this.maxH = 0;
+ 		this.maxW = 0;
  	}
  	
  	void add ( int k, int l ) {
+		if ( k < this.minH )
+			this.minH = k;
+		else if ( k > this.maxH )
+			this.maxH = k;
+		else if ( l < this.minW )
+			this.minW = l;
+		else if ( l > this.maxW )
+			this.maxW = l;
+		
  		this.lst.add(new Point (k,l));
  	}
  	
@@ -74,7 +89,7 @@ public class Recognizer {
 	private List<Point> ll;						// list of lower left corners
 	private List<Point> lr;						// list of lower right corners
 	
-	private List<Rectangle> rectangles;			// list of found rectangles
+	public List<Rectangle> rectangles;			// list of found rectangles
 	public List<Shape> elipses;
 	public List<Shape> prostokaty;
 	
@@ -102,12 +117,12 @@ public class Recognizer {
 	}
 	
 	public void recognizeElipse() {
-		int tk  = 0;	// temporary value used in iterations
-		int tl  = 0;	// temporary value used in iterations
-		int ttk = 0;	// temporary value used in condition with last marked pixel
-		int ttl = 0;	// temporary value used in condition with last marked pixel
-		int tempTK = 0;	// temporary value used to store tk value;
-		int tempTL = 0; // temporary value used to store tl value;
+		int tk  = 0;			// temporary value used in iterations
+		int tl  = 0;			// temporary value used in iterations
+		int ttk = 0;			// temporary value used in condition with last marked pixel
+		int ttl = 0;			// temporary value used in condition with last marked pixel
+		int tempTK = 0;			// temporary value used to store tk value;
+		int tempTL = 0; 		// temporary value used to store tl value;
 		boolean flag = false;	// flag indicating if the neighbor of currently parsed pixel is closing the shape
 		
 		int licz = 0;
@@ -117,6 +132,9 @@ public class Recognizer {
 				if ( array[k][l] == 1 ) {
 					
 					Shape e = new Shape();
+					e.minH = height;
+					e.minW = width;
+					
 					e.add(k, l);  			// add first point to ellipse
 					
 					licz ++;
@@ -437,7 +455,23 @@ public class Recognizer {
 		    }
 		}
 	}
+	
+ 	public void moveElipse( Shape s, int moveX, int moveY ) {
 		
+ 		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
+ 			 (s.minH + moveY < 0) || (s.maxH + moveY >= height) ) {
+ 			System.out.println("WARNING! Cannot move elipse");
+ 			return;
+ 		}
+ 		
+ 		for ( Point p : s.lst ) {
+ 			array[p.k][p.l] -= 3;
+ 			p.k += moveY;
+			p.l += moveX;
+			array[p.k][p.l] += 3;
+		}
+	}
+	
 	private void markEdges() {
 		
 		int currentRect = 0;
@@ -504,6 +538,7 @@ public class Recognizer {
 		}
 		this.prostokaty.add(s);
 	}
+
 	
 	private void isUpperLeftCorner(int k, int l) {
 		if ( array[k][l] == 1 
@@ -578,5 +613,14 @@ public class Recognizer {
 		printList(ll);
 		System.out.println("Found unused LR corners");
 		printList(lr);
+		
+		moveElipse(elipses.get(0), 10, -1);
+		
+		for (int j = 0; j < pa.getWidth(); j++) {
+			System.out.println();
+		    for (int k = 0; k < pa.getHeight(); k++) {
+		        System.out.print(array[j][k]);
+		    }
+		}
 	}
 }
