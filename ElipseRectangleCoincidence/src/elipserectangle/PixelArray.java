@@ -17,7 +17,7 @@ public class PixelArray {
 	
 	private PixelArray() {
 		try {
-			Image image = ImageIO.read(new File("pictures/04.bmp"));
+			Image image = ImageIO.read(new File("pictures/00.bmp"));
 			BufferedImage img = new BufferedImage(image.getWidth(null),
 												  image.getHeight(null),
 												  BufferedImage.TYPE_BYTE_GRAY);
