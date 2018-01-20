@@ -3,48 +3,60 @@ package elipserectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * Recognizer class is responsible for recognize shapes
+/**
+ * Klasa Point reprezentuje punkt x,y.
+ * 
+ * @author Wojciech Nowak, Dawid Gadomski
  */
-
-/*
-	array[tk-1][tl-1] tk = tk-1; tl = tl-1;	array[tk-1][l] tk = tk-1;	array[tk-1][tl+1] tk = tk-1; tl = tl+1;
-	
-	array[tk][tl-1] tl = tl-1;				array[tk][tl]				array[tk][tl+1] tl = tl+1;
-	
-	array[tk+1][tl-1] tk = tk+1; tl = tl-1;	array[tk+1][tl]	tk = tk+1; 	array[tk+1][tl+1] tk = tk+1; tl = tl+1;
-	
-	
-	
-	&& tk-1 >= 0
-	&& tk+1 < height
-	&& tl-1 >= 0
-	&& tl+1 < width
-*/
-
 class Point {
 	int k = 0;
 	int l = 0;
+	
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param k okresla polozenie x
+	 * @param l okresla polozenie y
+	 */
 	Point ( int k, int l) {
 		this.k = k;
 		this.l = l;
 	}
 	
+	/**
+	 * Metoda wypisuje punkt.
+	 */
 	public void printPoint() {
 		System.out.print("(" + k + "," + l + ")");
 	}
 }
 
+/**
+ * Klasa Rectangle reprezentuje prostokat jako jego gorny lewy rog oraz dolny prawy rog. 
+ * 
+ * @author Wojciech Nowak, Dawid Gadomski
+ */
 class Rectangle {
 	Point upperLeftCorner  = null;
 	Point lowerRightCorner = null;
 	
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param a gorny, lewy rog prostokata (x,y)
+	 * @param b dolny, prawy rog prostokata (x,y)
+	 */
 	Rectangle( Point a, Point b ) {
 		this.upperLeftCorner = a;
 		this.lowerRightCorner = b;
 	}
 }
 
+/**
+ * Klasa Shape potrzebna do rozpoznawania elips.
+ * 
+ * @author Wojciech Nowak, Dawid Gadomski
+ */
 class Shape {
 	public List<Point> lst;
 	public int maxW;
@@ -52,12 +64,21 @@ class Shape {
 	public int maxH;
 	public int minH;
  	
+	/**
+	 * Konstruktor.
+	 */
  	Shape ( ) {
  		this.lst = new ArrayList<>();
  		this.maxH = 0;
  		this.maxW = 0;
  	}
  	
+ 	/**
+ 	 * Metoda dodaje punkt do listy.
+ 	 * 
+ 	 * @param k polozenie x
+ 	 * @param l polozenie y
+ 	 */
  	void add ( int k, int l ) {
 		if ( k < this.minH )
 			this.minH = k;
@@ -71,6 +92,9 @@ class Shape {
  		this.lst.add(new Point (k,l));
  	}
  	
+ 	/**
+ 	 * Wypisuje punkt.
+ 	 */
  	public void print() {
  		System.out.println();
  		for ( Point p : lst ) {
@@ -79,6 +103,11 @@ class Shape {
  	}
 }
 
+/**
+ * Klasa Rocognizer zawiera glowne metody potrzebne do oznaczania oraz przesuwania elips i prostokatow.
+ * 
+ * @author Wojciech Nowak, Dawid Gadomski
+ */
 public class Recognizer {
 	private PixelArray pa = PixelArray.getInstance();
 	private int[][] array = pa.getPixelArray();
@@ -93,6 +122,9 @@ public class Recognizer {
 	public List<Shape> elipses;
 	public List<Shape> prostokaty;
 	
+	/**
+	 * Konstruktor klasy Recognizer, w ktorym definiowane sa potrzebne listy.
+	 */
 	public Recognizer() {
 		ul = new ArrayList<>();
 		ur = new ArrayList<>();
@@ -104,6 +136,9 @@ public class Recognizer {
 		prostokaty = new ArrayList<>();
 	}
 	
+	/**
+	 * Metoda rozpoznajaca prostokaty.
+	 */
 	public void recognizeRectangle() {
 		for( int j = 0; j < height; j++ ) {
 			for( int i = 0; i < width; i++ ) {
@@ -116,6 +151,9 @@ public class Recognizer {
 		markEdges();
 	}
 	
+	/**
+	 * Metoda rozpoznajaca elipsy.
+	 */
 	public void recognizeElipse() {
 		int tk  = 0;			// temporary value used in iterations
 		int tl  = 0;			// temporary value used in iterations
@@ -426,10 +464,10 @@ public class Recognizer {
 		System.out.println("\nRozpoczeto parsowanie: " + licz + " razy.");
 	}
 
-		/**
-	 * Metoda do przesuwania prostokata
+	/**
+	 * Metoda odpowiedzialna za zmiane polozenia prostokata.
 	 * 
-	 * @param r obiekt przesuwanego prostokata, moze trzeba bedzie dodac jakis parametr do obiektu, ktory go zidentyfikuje?
+	 * @param r referencja do obiektu klasy Rectangle
 	 * @param moveX przesuniecie o x
 	 * @param moveY przesuniecie o y
 	 */
@@ -456,6 +494,13 @@ public class Recognizer {
 		}
 	}
 	
+	/**
+	 * Metoda odpowiedzialna za zmiane polozenia elipsy.
+	 * 
+	 * @param s referencja do obiektu klasy Shape
+	 * @param moveX przesuniecie o x
+	 * @param moveY przesuniecie o y
+	 */
  	public void moveElipse( Shape s, int moveX, int moveY ) {
 		
  		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
@@ -472,6 +517,9 @@ public class Recognizer {
 		}
 	}
 	
+ 	/**
+ 	 * Metoda wykonuje operacje potrzebne do zaznaczenia i rozpoznania prostokatow.
+ 	 */
 	private void markEdges() {
 		
 		int currentRect = 0;
@@ -479,9 +527,8 @@ public class Recognizer {
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
-			//System.out.println("\nParsing: ");
-			//pul.printPoint();
 			int ill = findL(ll, pul.l);
+			
 			if( ill != -1 ) {
 				pll = ll.get(ill);
 				
@@ -504,7 +551,6 @@ public class Recognizer {
 							System.out.println(currentRect);
 							
 							colorRectangle(rectangles.get(currentRect));
-							if (currentRect == 3) moveRectangle(rectangles.get(currentRect), 20, -20);
 							currentRect+=1;
 							
 							ul.remove(i);
@@ -523,8 +569,9 @@ public class Recognizer {
 	}
 	
 	/**
-	 * Funkcja "kolorujaca" prostokat (1 -> 2)
-	 * @param r
+	 * Funkcja "kolorujaca" prostokat, zamienia 1 na 2 dla prostszego odnalezienia.
+	 * 
+	 * @param r wybrany prostokat
 	 */
 	private void colorRectangle( Rectangle r ) {
 		Shape s = new Shape();
@@ -539,7 +586,12 @@ public class Recognizer {
 		this.prostokaty.add(s);
 	}
 
-	
+	/**
+	 * Metoda uzywana do rozpoznania czy jest to gorny, lewy rog prostokata.
+	 * 
+	 * @param k parametr x
+	 * @param l parametr y
+	 */
 	private void isUpperLeftCorner(int k, int l) {
 		if ( array[k][l] == 1 
 		     && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
@@ -548,6 +600,12 @@ public class Recognizer {
 		}
 	}
 	
+	/**
+	 * Metoda uzywana do rozpoznania czy jest to gorny, prawy rog prostokata.
+	 * 
+	 * @param k parametr x
+	 * @param l parametr y
+	 */
 	private void isUpperRightCorner(int k, int l) {
 		if ( array[k][l] == 1
 			 && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
@@ -556,6 +614,12 @@ public class Recognizer {
 		}
 	}
 	
+	/**
+	 * Metoda uzywana do rozpoznania czy jest to dolny, lewy rog prostokata.
+	 * 
+	 * @param k parametr x
+	 * @param l parametr y
+	 */
 	private void isLowerLeftCorner(int k, int l) {
 		if ( array[k][l] == 1
 			 && k-2 >= 0     && array[k-1][l] == 1 && array[k-2][l] == 1
@@ -564,6 +628,12 @@ public class Recognizer {
 		}
 	}
 
+	/**
+	 * Metoda uzywana do rozpoznania czy jest to dolny, prawy rog prostokata.
+	 * 
+	 * @param k parametr x
+	 * @param l parametr y
+	 */
 	private void isLowerRightCorner(int k, int l) {
 		if ( array[k][l] == 1
 			 && k-2 >= 0     && array[k-1][l] == 1 && array[k-2][l] == 1
@@ -572,6 +642,13 @@ public class Recognizer {
 		}
 	}
 
+	/**
+	 * Metoda znajduje parametr k (x) na liscie punktow.
+	 * 
+	 * @param l lista puntow
+	 * @param k szukany x
+	 * @return val lista znalezionych punktow
+	 */
 	private List<Integer> findK( List<Point> l, int k) {
 		List<Integer> val = new ArrayList<>();
 		for( int i = 0; i < l.size(); i++) {
@@ -582,6 +659,13 @@ public class Recognizer {
 		return val;
 	}
 	
+	/**
+	 * Metoda znajduje parametr l (y) na liscie punktow.
+	 * 
+	 * @param lst lista puntow
+	 * @param l szukany y
+	 * @return -1 jesli nie znaleziono, i jesli znaleziono
+	 */
 	private int findL( List<Point> lst, int l) {
 		for( int i = 0; i < lst.size(); i++) {
 			if ( lst.get(i).l == l ) {
@@ -591,6 +675,11 @@ public class Recognizer {
 		return -1;
 	}
 	
+	/**
+	 * Metoda wypisuje liste punktow.
+	 * 
+	 * @param l lista punktow
+	 */
 	private void printList(List<Point> l) {
 		System.out.println();
 		for ( Point p : l ) {
@@ -598,13 +687,11 @@ public class Recognizer {
 		}
 	}
 	
+	/**
+	 * Metoda uzywana do wypisania finalnych zmian.
+	 */
 	public void print() {
-		/*for (int j = 0; j < pa.getWidth(); j++) {
-			System.out.println();
-		    for (int k = 0; k < pa.getHeight(); k++) {
-		        System.out.print(array[j][k]);
-		    }
-		}*/
+
 		System.out.println("\nFound unused UL corners");
 		printList(ul);
 		System.out.println("Found unused UR corners");
@@ -614,6 +701,7 @@ public class Recognizer {
 		System.out.println("Found unused LR corners");
 		printList(lr);
 		
+		moveRectangle(rectangles.get(3), 20, -20);
 		moveElipse(elipses.get(0), 10, -1);
 		
 		for (int j = 0; j < pa.getWidth(); j++) {

@@ -9,12 +9,23 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Klasa odpowiedzialna za odczytywanie pixeli z pliku. Tworzona jest tablica dwuwymiarowa, w ktorej
+ * 1 oznaczaja brzegi figur, a 0 puste miejsca.
+ * 
+ * @author Wojciech Nowak, Dawid Gadomski
+ *
+ */
 public class PixelArray {
 	public static PixelArray instance = new PixelArray();
 	private int[][] pixelArray;
 	private int width;
 	private int height;
 	
+	/**
+	 * Konstruktor klasy. Wybierana jest tutaj nazwa wczytywanego pliku, a nastepnie jest on 
+	 * przetwarzany i wpisywany do tablicy.
+	 */
 	private PixelArray() {
 		try {
 			Image image = ImageIO.read(new File("pictures/00.bmp"));
@@ -46,22 +57,45 @@ public class PixelArray {
 		}
 	}
 	
+	/**
+	 * Metoda zwraca instancje klasy.
+	 * 
+	 * @return instancja klasy
+	 */
 	public static PixelArray getInstance() {
 		return instance;
 	}
 	
+	/**
+	 * Metoda zwraca tablice.
+	 * 
+	 * @return dwuwymiarowa tablice zapisanych pixeli
+	 */
 	public int[][] getPixelArray() {
 		return this.pixelArray;
 	}
 	
+	/**
+	 * Metoda odczytuje szerokosc.
+	 *  
+	 * @return szerokosc
+	 */
 	public int getWidth() {
 		return this.width;
 	}
 	
+	/**
+	 * Metoda odczytuje wysokosc.
+	 * 
+	 * @return wysokosc
+	 */
 	public int getHeight() {
 		return this.height;
 	}
 	
+	/**
+	 * Metoda wypisuje wczytane dane z pliku.
+	 */
 	public void printPixelArray() {
 		for (int j = 0; j < width; j++) {
 			System.out.println();
