@@ -71,6 +71,10 @@ class Shape {
  		this.lst.add(new Point (k,l));
  	}
  	
+ 	void addPure ( int k, int l ) {		// method used in case of rectangle without max/min check
+ 		this.lst.add(new Point(k,l));
+ 	}
+ 	
  	public void print() {
  		System.out.println();
  		for ( Point p : lst ) {
@@ -90,7 +94,7 @@ public class Recognizer {
 	private List<Point> lr;						// list of lower right corners
 	
 	public List<Rectangle> rectangles;			// list of found rectangles
-	public List<Shape> elipses;
+	public List<Shape> ellipses;
 	public List<Shape> prostokaty;
 	
 	public Recognizer() {
@@ -100,7 +104,7 @@ public class Recognizer {
 		lr = new ArrayList<>();
 		
 		rectangles = new ArrayList<>();
-		elipses    = new ArrayList<>();
+		ellipses    = new ArrayList<>();
 		prostokaty = new ArrayList<>();
 	}
 	
@@ -413,7 +417,7 @@ public class Recognizer {
 					while ( flag != true && iter < 100);		// zakladam, ze robimy okrazenie i wyladujemy w tym samym punkcie, iter mozna bedzie wyrzucic
 					System.out.println("Koniec parsowania: " + tl + ". " + tk);
 					
-					this.elipses.add(e);
+					this.ellipses.add(e);
 				}
 			}
 		}
@@ -433,34 +437,33 @@ public class Recognizer {
 	 * @param moveX przesuniecie o x
 	 * @param moveY przesuniecie o y
 	 */
-	public void moveRectangle( Rectangle r, int moveX, int moveY ) {
+	public void moveRectangle( int index, int moveX, int moveY ) {
+		Shape s = prostokaty.get(index);
 		
-		if (r.upperLeftCorner.l + moveY > 99 || r.upperLeftCorner.l + moveY < 0 || r.lowerRightCorner.l + moveY > 99 || r.lowerRightCorner.l + moveY < 0) {
-			System.out.println("WARNING! Cannot move " + r + "! Index Y out of band!");
-		} else if (r.upperLeftCorner.k + moveX > 99 || r.upperLeftCorner.k + moveX < 0 || r.lowerRightCorner.k + moveX > 99 || r.lowerRightCorner.k + moveX < 0) {
-			System.out.println("WARNING! Cannot move " + r + "! Index X out of band!");
-		} else {
-			for( int j = 0; j <= r.lowerRightCorner.l - r.upperLeftCorner.l; j++ ) {
-				for( int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++ ) {
-					array[r.upperLeftCorner.k+i+moveX][r.upperLeftCorner.l+j+moveY] += array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j];
-					array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] = 0;
-				}
-			}
-		}
-		
-		for (int j = 0; j < width; j++) {
-			System.out.println();
-		    for (int k = 0; k < height; k++) {
-		        System.out.print(array[j][k]);
-		    }
-		}
-	}
-	
- 	public void moveElipse( Shape s, int moveX, int moveY ) {
+		moveY = -moveY;		// for natural moving
 		
  		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
  			 (s.minH + moveY < 0) || (s.maxH + moveY >= height) ) {
- 			System.out.println("WARNING! Cannot move elipse");
+ 			System.out.println("WARNING! Cannot move recatngle");
+ 			return;
+ 		}
+ 		
+ 		for ( Point p : s.lst ) {
+ 			array[p.k][p.l] -= 2;
+ 			p.k += moveY;
+			p.l += moveX;
+			array[p.k][p.l] += 2;
+		}
+	}
+	
+ 	public void moveEllipse( int index, int moveX, int moveY ) {
+ 		Shape s = this.ellipses.get(index);
+ 		
+ 		moveY = -moveY;		// for natural moving
+ 		
+ 		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
+ 			 (s.minH + moveY < 0) || (s.maxH + moveY >= height) ) {
+ 			System.out.println("WARNING! Cannot move ellipse");
  			return;
  		}
  		
@@ -473,9 +476,6 @@ public class Recognizer {
 	}
 	
 	private void markEdges() {
-		
-		int currentRect = 0;
-		
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
@@ -485,7 +485,7 @@ public class Recognizer {
 			if( ill != -1 ) {
 				pll = ll.get(ill);
 				
-				List<Integer> iur = findK(ur, pul.k);		// to powinno zwracac tablice wszystkich znalezionych
+				List<Integer> iur = findK(ur, pul.k);
 				List<Integer> ilr = findK(lr, pll.k);
 				
 				for ( int x = 0; x < iur.size(); x++ ) {
@@ -500,13 +500,10 @@ public class Recognizer {
 							pll.printPoint();
 							plr.printPoint();
 							
-							rectangles.add(new Rectangle(pul, plr));
-							System.out.println(currentRect);
-							
-							colorRectangle(rectangles.get(currentRect));
-							if (currentRect == 3) moveRectangle(rectangles.get(currentRect), 20, -20);
-							currentRect+=1;
-							
+							Rectangle r = new Rectangle(pul, plr);
+							colorRectangle(r);
+							rectangles.add(r);
+														
 							ul.remove(i);
 							ur.remove((int)iur.get(x));
 							iur.remove(x);
@@ -528,14 +525,29 @@ public class Recognizer {
 	 */
 	private void colorRectangle( Rectangle r ) {
 		Shape s = new Shape();
-		for( int j = 0; j <= r.lowerRightCorner.l - r.upperLeftCorner.l; j++ ) {
-			for( int i = 0; i <= r.lowerRightCorner.k - r.upperLeftCorner.k; i++ ) {
-				if (array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] == 1) {
-					array[r.upperLeftCorner.k+i][r.upperLeftCorner.l+j] += 1;
-					s.add(r.upperLeftCorner.k+i, r.upperLeftCorner.l+j);
-				}
-			}
+		
+		// UL -> LL 18
+		// UR -> LR
+		for ( int i = r.upperLeftCorner.k; i <= r.lowerRightCorner.k; i++ ) {
+			array[i][r.upperLeftCorner.l]  += 1;
+			s.addPure(i,r.upperLeftCorner.l);
+			array[i][r.lowerRightCorner.l] += 1;
+			s.addPure(i, r.lowerRightCorner.l);
 		}
+		// UL -> UR 14
+		// LL -> LR
+		for ( int i = r.upperLeftCorner.l + 1; i < r.lowerRightCorner.l; i++ ) { // zmienione warunki zeby nie powtarzac
+			array[r.upperLeftCorner.k][i]  += 1;
+			s.addPure(r.upperLeftCorner.k, i);
+			array[r.lowerRightCorner.k][i] += 1;
+			s.addPure(r.lowerRightCorner.k, i);
+		}
+		
+		s.maxH = r.lowerRightCorner.k;
+		s.maxW = r.lowerRightCorner.l;
+		s.minH = r.upperLeftCorner.k;
+		s.minW = r.upperLeftCorner.l;
+		
 		this.prostokaty.add(s);
 	}
 
@@ -599,12 +611,6 @@ public class Recognizer {
 	}
 	
 	public void print() {
-		/*for (int j = 0; j < pa.getWidth(); j++) {
-			System.out.println();
-		    for (int k = 0; k < pa.getHeight(); k++) {
-		        System.out.print(array[j][k]);
-		    }
-		}*/
 		System.out.println("\nFound unused UL corners");
 		printList(ul);
 		System.out.println("Found unused UR corners");
@@ -614,7 +620,9 @@ public class Recognizer {
 		System.out.println("Found unused LR corners");
 		printList(lr);
 		
-		moveElipse(elipses.get(0), 10, -1);
+		moveEllipse(0, 10, -1);
+		moveRectangle(0, 14, 24);
+		moveRectangle(0, 6, 4);
 		
 		for (int j = 0; j < pa.getWidth(); j++) {
 			System.out.println();
