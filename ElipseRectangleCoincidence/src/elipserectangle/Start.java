@@ -9,7 +9,7 @@ public class Start {
 		Recognizer r = new Recognizer();
 		r.recognizeRectangle();
 		
-		r.recognizeElipse();
+		r.recognizeEllipse();
 		
 		r.print();
 	}

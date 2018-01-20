@@ -108,6 +108,107 @@ public class Recognizer {
 		prostokaty = new ArrayList<>();
 	}
 	
+	private int intersect ( Shape a, Shape b ) {
+		int flag = 0;
+		boolean tangential = false;
+		for ( Point p : a.lst ) {
+			for ( Point pi : b.lst ) {
+				flag = compare(p,pi);
+				if ( flag == 1 ) {
+					return 1;
+				}
+				if ( flag == 2 ) {
+					tangential = true;
+				}
+			}
+		}
+		if ( tangential ) {
+			return 2;
+		}
+		else {
+			return 0;
+		}
+	}
+	
+	private boolean contain ( Shape a, Shape b ) {
+		if ( a.maxH > b.maxH && a.minH < b.minH && a.maxW > b.maxW && a.minW < b.minW  ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public void findIntersections() {
+		int flag = 0;
+		// Rectangle / Recatngle
+		for ( int i = 0; i < prostokaty.size(); i++ ) {
+			for ( int j = 0; j < prostokaty.size(); j++ ) {
+				if ( i != j ) {
+					Shape a = prostokaty.get(i);
+					Shape b = prostokaty.get(j);
+					switch ( intersect(a,b) ) {
+						case 1:
+							System.out.println("Prostokat " + i + " przecina sie z prostokatem " + j);
+							break;
+						case 2:
+							System.out.println("Prostokat " + i + " jest styczny do prostokata " + j);
+							break;
+						case 0:
+							break;
+					}
+					if ( contain (a,b)) {
+						System.out.println("Prostokat " + i + " zawiera prostokat " + j);
+					}
+				}
+			}
+		}
+		// Rectangle / Ellipse
+		for ( int i = 0; i < prostokaty.size(); i++ ) {
+			for ( int j = 0; j < ellipses.size(); j++ ) {
+				if ( i != j ) {
+					Shape a = prostokaty.get(i);
+					Shape b = ellipses.get(j);
+					switch ( intersect(a,b) ) {
+						case 1:
+							System.out.println("Prostokat " + i + " przecina sie z elipsa " + j);
+							break;
+						case 2:
+							System.out.println("Prostokat " + i + " jest styczny do elipsy " + j);
+							break;
+						case 0:
+							break;
+					}
+					if ( contain (a,b)) {
+						System.out.println("Prostokat " + i + " zawiera elipse " + j);
+					}
+				}
+			}
+		}
+		// Ellipse / Ellipse
+		for ( int i = 0; i < ellipses.size(); i++ ) {
+			for ( int j = 0; j < ellipses.size(); j++ ) {
+				if ( i != j ) {
+					Shape a = ellipses.get(i);
+					Shape b = ellipses.get(j);
+					switch ( intersect(a,b) ) {
+						case 1:
+							System.out.println("Elipsa " + i + " przecina sie z elipsa " + j);
+							break;
+						case 2:
+							System.out.println("Elipsa " + i + " jest styczna do elipsy " + j);
+							break;
+						case 0:
+							break;
+					}
+					if ( contain (a,b)) {
+						System.out.println("Elipsa " + i + " zawiera elipse " + j);
+					}
+				}
+			}
+		}
+	}
+	
 	public void recognizeRectangle() {
 		for( int j = 0; j < height; j++ ) {
 			for( int i = 0; i < width; i++ ) {
@@ -120,7 +221,7 @@ public class Recognizer {
 		markEdges();
 	}
 	
-	public void recognizeElipse() {
+	public void recognizeEllipse() {
 		int tk  = 0;			// temporary value used in iterations
 		int tl  = 0;			// temporary value used in iterations
 		int ttk = 0;			// temporary value used in condition with last marked pixel
@@ -439,6 +540,7 @@ public class Recognizer {
 	 */
 	public void moveRectangle( int index, int moveX, int moveY ) {
 		Shape s = prostokaty.get(index);
+		Rectangle r = rectangles.get(index);
 		
 		moveY = -moveY;		// for natural moving
 		
@@ -454,6 +556,16 @@ public class Recognizer {
 			p.l += moveX;
 			array[p.k][p.l] += 2;
 		}
+ 		
+		r.lowerRightCorner.k += moveY;
+		r.lowerRightCorner.l += moveX;
+		r.upperLeftCorner.k += moveY;
+		r.upperLeftCorner.l += moveX;
+ 		
+		s.maxH = r.lowerRightCorner.k;
+		s.maxW = r.lowerRightCorner.l;
+		s.minH = r.upperLeftCorner.k;
+		s.minW = r.upperLeftCorner.l;
 	}
 	
  	public void moveEllipse( int index, int moveX, int moveY ) {
@@ -473,6 +585,11 @@ public class Recognizer {
 			p.l += moveX;
 			array[p.k][p.l] += 3;
 		}
+ 		
+ 		s.maxH += moveY;
+ 		s.minH += moveY;
+ 		s.maxW += moveX;
+ 		s.minW += moveX;
 	}
 	
 	private void markEdges() {
@@ -551,7 +668,6 @@ public class Recognizer {
 		this.prostokaty.add(s);
 	}
 
-	
 	private void isUpperLeftCorner(int k, int l) {
 		if ( array[k][l] == 1 
 		     && k+2 < height && array[k+1][l] == 1 && array[k+2][l] == 1
@@ -610,6 +726,24 @@ public class Recognizer {
 		}
 	}
 	
+	/*
+	 * return 1	- same point
+	 * return 2 - neighbor
+	 * return 0 - any
+	 */
+	private int compare(Point a, Point b) {
+		if ( a.k == b.k && a.l == b.l ) {
+			return 1;
+		}
+		else if ( (a.k == b.k && ( a.l == b.l+1 || a.l == b.l-1 )) ||
+				  (a.l == b.l && ( a.k == b.k+1 || a.k == b.k-1 ))) {
+			return 2;
+		}
+		else {
+			return 0;
+		}
+	}
+	
 	public void print() {
 		System.out.println("\nFound unused UL corners");
 		printList(ul);
@@ -620,9 +754,9 @@ public class Recognizer {
 		System.out.println("Found unused LR corners");
 		printList(lr);
 		
-		moveEllipse(0, 10, -1);
-		moveRectangle(0, 14, 24);
-		moveRectangle(0, 6, 4);
+		moveEllipse(3, 0, 1);
+		moveEllipse(2,50,0);
+		moveRectangle(0, 84, 0);
 		
 		for (int j = 0; j < pa.getWidth(); j++) {
 			System.out.println();
@@ -630,5 +764,7 @@ public class Recognizer {
 		        System.out.print(array[j][k]);
 		    }
 		}
+		
+		findIntersections();
 	}
 }
