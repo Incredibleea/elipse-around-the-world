@@ -8,8 +8,13 @@ public class Start {
 		
 		Recognizer r = new Recognizer();
 		r.recognizeRectangle();
-		
 		r.recognizeEllipse();
+		
+		r.moveEllipse(3, 4, 4);
+		r.moveEllipse(2,4,7);
+		r.moveRectangle(3, -3, 4);
+		
+		r.findIntersections();
 		
 		r.print();
 	}

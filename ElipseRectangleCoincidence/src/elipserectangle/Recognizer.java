@@ -71,7 +71,12 @@ class Shape {
  		this.lst.add(new Point (k,l));
  	}
  	
- 	void addPure ( int k, int l ) {		// method used in case of rectangle without max/min check
+ 	/**
+ 	 * Metoda do dodawaniu punktow prostokata (wyklucza sprawdzanie min.max)
+ 	 * @param k
+ 	 * @param l
+ 	 */
+ 	void addPure ( int k, int l ) {
  		this.lst.add(new Point(k,l));
  	}
  	
@@ -93,9 +98,9 @@ public class Recognizer {
 	private List<Point> ll;						// list of lower left corners
 	private List<Point> lr;						// list of lower right corners
 	
-	public List<Rectangle> rectangles;			// list of found rectangles
-	public List<Shape> ellipses;
-	public List<Shape> prostokaty;
+	public List<Rectangle> rectangles;			// list of found rectangles by UL,LR corners
+	public List<Shape> ellipses;				// list of Shapes contain ellipse's points
+	public List<Shape> prostokaty;				// list of Shapes contain rectangle's points
 	
 	public Recognizer() {
 		ul = new ArrayList<>();
@@ -104,7 +109,7 @@ public class Recognizer {
 		lr = new ArrayList<>();
 		
 		rectangles = new ArrayList<>();
-		ellipses    = new ArrayList<>();
+		ellipses   = new ArrayList<>();
 		prostokaty = new ArrayList<>();
 	}
 	
@@ -149,16 +154,16 @@ public class Recognizer {
 					Shape b = prostokaty.get(j);
 					switch ( intersect(a,b) ) {
 						case 1:
-							System.out.println("Prostokat " + i + " przecina sie z prostokatem " + j);
+							System.out.println("Prostokat " + (i+2) + " przecina sie z prostokatem " + (j+2));
 							break;
 						case 2:
-							System.out.println("Prostokat " + i + " jest styczny do prostokata " + j);
+							System.out.println("Prostokat " + (i+2) + " jest styczny do prostokata " + (j+2));
 							break;
 						case 0:
 							break;
 					}
 					if ( contain (a,b)) {
-						System.out.println("Prostokat " + i + " zawiera prostokat " + j);
+						System.out.println("Prostokat " + (i+2) + " zawiera prostokat " + (j+2));
 					}
 				}
 			}
@@ -171,16 +176,16 @@ public class Recognizer {
 					Shape b = ellipses.get(j);
 					switch ( intersect(a,b) ) {
 						case 1:
-							System.out.println("Prostokat " + i + " przecina sie z elipsa " + j);
+							System.out.println("Prostokat " + (i+2) + " przecina sie z elipsa " + (j+2));
 							break;
 						case 2:
-							System.out.println("Prostokat " + i + " jest styczny do elipsy " + j);
+							System.out.println("Prostokat " + (i+2) + " jest styczny do elipsy " + (j+2));
 							break;
 						case 0:
 							break;
 					}
 					if ( contain (a,b)) {
-						System.out.println("Prostokat " + i + " zawiera elipse " + j);
+						System.out.println("Prostokat " + (i+2) + " zawiera elipse " + (j+2));
 					}
 				}
 			}
@@ -193,16 +198,16 @@ public class Recognizer {
 					Shape b = ellipses.get(j);
 					switch ( intersect(a,b) ) {
 						case 1:
-							System.out.println("Elipsa " + i + " przecina sie z elipsa " + j);
+							System.out.println("Elipsa " + (i+2) + " przecina sie z elipsa " + (j+2));
 							break;
 						case 2:
-							System.out.println("Elipsa " + i + " jest styczna do elipsy " + j);
+							System.out.println("Elipsa " + (i+2) + " jest styczna do elipsy " + (j+2));
 							break;
 						case 0:
 							break;
 					}
 					if ( contain (a,b)) {
-						System.out.println("Elipsa " + i + " zawiera elipse " + j);
+						System.out.println("Elipsa " + (i+2) + " zawiera elipse " + (j+2));
 					}
 				}
 			}
@@ -229,8 +234,8 @@ public class Recognizer {
 		int tempTK = 0;			// temporary value used to store tk value;
 		int tempTL = 0; 		// temporary value used to store tl value;
 		boolean flag = false;	// flag indicating if the neighbor of currently parsed pixel is closing the shape
-		
-		int licz = 0;
+		int licz = 0;			// for marking ellipses purpose
+		int iter = 0;			// to avoid endless loop
 		
 		for ( int k = 0; k < height; k++ ) {
 			for ( int l = 0; l < width; l++ ) {
@@ -242,49 +247,44 @@ public class Recognizer {
 					
 					e.add(k, l);  			// add first point to ellipse
 					
-					licz ++;
-					
-					int iter = 0;
+					licz = ellipses.size() + 1;
+					iter = 0;			
 					flag = false;
 					
 					tk = k;
 					tl = l;
 					
-					System.out.println("Start parsowania: " + tl + ". " + tk);
-					
-					array[tk][tl] += 2;
+					array[tk][tl] += licz;
 					ttk = tk;	// one before last marked pixel
 					ttl = tl;	// one before last marked pixel
 					
 					// mark second pixel to state the direction
 					
 					if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) {
-						array[tk-1][tl+1] += 2;
+						array[tk-1][tl+1] += licz;
 						tk = tk-1;
 						tl = tl+1;
 					}
 					else if ( tl+1 < width && array[tk][tl+1] == 1 ) {
-						array[tk][tl+1] += 2;
+						array[tk][tl+1] += licz;
 						tl = tl+1;
 					}
 					else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1 ) {
-						array[tk+1][tl+1] += 2;
+						array[tk+1][tl+1] += licz;
 						tk = tk+1;
 						tl = tl+1;
 					}
 					else if ( tk+1 < height && array[tk+1][tl] == 1 ) {
-						array[tk+1][tl] += 2;
+						array[tk+1][tl] += licz;
 						tk = tk+1;
 					}
 					else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {
-						array[tk+1][tl-1] += 2;
+						array[tk+1][tl-1] += licz;
 						tk = tk+1;
 						tl = tl-1;
 					}
 					
 					e.add(tk, tl);
-					
-					// higher probability could be made by parsing one before last frame
 					
 					do {
 						tempTK = tk;		// store index of currently parsed pixel for future use as one before last parsed pixel
@@ -301,23 +301,23 @@ public class Recognizer {
 								 ( tk+1 == k && tl-1 == l ) ||
 								 ( tk == k && tl - 1 == l ))) {
 								flag = true;
-								System.out.println("Zamknieto figure przed czasem: " + tl + ", " +  tk);
+								System.out.println("Znaleziono elipse: " + tl + ", " +  tk);
 								break;
 							}
 						
 						// Upper left
 						if ( ttk == tk -1 && ttl == tl -1) {
 							if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
-								array[tk+1][tl+1] += 2;
+								array[tk+1][tl+1] += licz;
 								tk = tk+1;
 								tl = tl+1;
 							}
 							else if ( tl+1 < width && array[tk][tl+1] == 1 && tl+1 < width ) {	// Right
-								array[tk][tl+1] += 2;
+								array[tk][tl+1] += licz;
 								tl = tl+1;
 							}
 							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {					// Lower
-								array[tk+1][tl] += 2;
+								array[tk+1][tl] += licz;
 								tk = tk+1;
 							}
 							else {
@@ -328,25 +328,25 @@ public class Recognizer {
 						// Upper
 						else if ( ttk == tk-1 && ttl == tl ) {
 							if ( tk+1 < height && array[tk+1][tl] == 1 ) {							// Lower		
-								array[tk+1][tl] += 2;
+								array[tk+1][tl] += licz;
 								tk = tk+1;
 							}
 							else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {		// Lower left
-								array[tk+1][tl-1] += 2;
+								array[tk+1][tl-1] += licz;
 								tk = tk+1;
 								tl = tl-1;
 							}
 							else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
-								array[tk+1][tl+1] += 2;
+								array[tk+1][tl+1] += licz;
 								tk = tk+1;
 								tl = tl+1;
 							}
 							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {							// Left
-								array[tk][tl-1] += 2;
+								array[tk][tl-1] += licz;
 								tl = tl-1;
 							}
 							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {						// Right
-								array[tk][tl+1] += 2;
+								array[tk][tl+1] += licz;
 								tl = tl+1;
 							}
 							else {
@@ -358,16 +358,16 @@ public class Recognizer {
 						// Upper right
 						else if ( ttk == tk-1 && ttl == tl + 1) {
 							if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {	// Lower left
-								array[tk+1][tl-1] += 2;
+								array[tk+1][tl-1] += licz;
 								tk = tk+1;
 								tl = tl-1;
 							}
 							else if ( array[tk][tl-1] == 1&& tl-1 >= 0  ) {					// Left
-								array[tk][tl-1] += 2;
+								array[tk][tl-1] += licz;
 								tl = tl-1;
 							}
 							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {				// Lower
-								array[tk+1][tl] += 2;
+								array[tk+1][tl] += licz;
 								tk = tk+1;
 							}
 							else {
@@ -378,25 +378,25 @@ public class Recognizer {
 						// Right
 						else if ( ttk == tk  && ttl == tl+1 ) {
 							if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {							// Left
-								array[tk][tl-1] += 2;
+								array[tk][tl-1] += licz;
 								tl = tl-1;
 							}
 							else if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1 ) {		// Upper left
-								array[tk-1][tl-1] += 2;
+								array[tk-1][tl-1] += licz;
 								tk = tk-1;
 								tl = tl-1;
 							}
 							else if ( tk+1 < height && tl-1 >= 0 && array[tk+1][tl-1] == 1 ) {	// Lower left
-								array[tk+1][tl-1] += 2;
+								array[tk+1][tl-1] += licz;
 								tk = tk+1;
 								tl = tl-1;
 							}
 							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {					// Upper
-								array[tk-1][tl] += 2;
+								array[tk-1][tl] += licz;
 								tk = tk-1;
 							}
 							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {					// Lower
-								array[tk+1][tl] += 2;
+								array[tk+1][tl] += licz;
 								tk = tk+1;
 							}
 							else {
@@ -407,16 +407,16 @@ public class Recognizer {
 						// Lower right
 						else if ( ttk == tk+1 && ttl == tl+1 ) {
 							if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1) {	// Upper left
-								array[tk-1][tl-1] += 2;
+								array[tk-1][tl-1] += licz;
 								tk = tk-1;
 								tl = tl-1;
 							}
 							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {				// Left
-								array[tk][tl-1] += 2;
+								array[tk][tl-1] += licz;
 								tl = tl-1;
 							}
 							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {			// Upper
-								array[tk-1][tl] += 2;
+								array[tk-1][tl] += licz;
 								tk = tk-1;
 							}
 							else {
@@ -427,25 +427,25 @@ public class Recognizer {
 						// Lower
 						else if ( ttk == tk+1 && ttl == tl ) {
 							if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {							// Upper
-								array[tk-1][tl] += 2;
+								array[tk-1][tl] += licz;
 								tk = tk-1;
 							}
 							else if ( tk-1 >= 0 && tl-1 >= 0 && array[tk-1][tl-1] == 1 ) {		// Upper left
-								array[tk-1][tl-1] += 2;
+								array[tk-1][tl-1] += licz;
 								tk = tk-1;
 								tl = tl-1;
 							}
 							else if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 	// Upper right
-								array[tk-1][tl+1] += 2;
+								array[tk-1][tl+1] += licz;
 								tk = tk-1;
 								tl = tl+1;
 							}
 							else if ( tl-1 >= 0 && array[tk][tl-1] == 1 ) {						// Left
-								array[tk][tl-1] += 2;
+								array[tk][tl-1] += licz;
 								tl = tl-1;
 							}
 							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {					// Right
-								array[tk][tl+1] += 2;
+								array[tk][tl+1] += licz;
 								tl = tl+1;
 							}
 							else {
@@ -456,16 +456,16 @@ public class Recognizer {
 						// Lower left
 						else if ( ttk == tk+1 && ttl == tl-1 ) {
 							if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 	// Upper right
-								array[tk-1][tl+1] += 2;
+								array[tk-1][tl+1] += licz;
 								tk = tk-1;
 								tl = tl+1;
 							}
 							else if ( tk-1 >= 0 && array[tk-1][tl] == 1  ) {				// Upper
-								array[tk-1][tl] += 2;
+								array[tk-1][tl] += licz;
 								tk = tk-1;
 							}
 							else if ( tl+1 < width && array[tk][tl+1] == 1 ) {				// Right
-								array[tk][tl+1] += 2;
+								array[tk][tl+1] += licz;
 								tl = tl+1;
 							}
 							else {
@@ -476,25 +476,25 @@ public class Recognizer {
 						// Left
 						else if ( ttk == tk && ttl == tl-1 ) {
 							if ( tl+1 < width && array[tk][tl+1] == 1 ) {							// Right
-								array[tk][tl+1] += 2;
+								array[tk][tl+1] += licz;
 								tl = tl+1;
 							}
 							else if ( tk-1 >= 0 && tl+1 < width && array[tk-1][tl+1] == 1 ) { 		// Upper right
-								array[tk-1][tl+1] += 2;
+								array[tk-1][tl+1] += licz;
 								tk = tk-1;
 								tl = tl+1;
 							}
 							else if ( tk+1 < height && tl+1 < width && array[tk+1][tl+1] == 1  ) {	// Lower right
-								array[tk+1][tl+1] += 2;
+								array[tk+1][tl+1] += licz;
 								tk = tk+1;
 								tl = tl+1;
 							}
 							else if ( tk-1 >= 0 && array[tk-1][l] == 1  ) {							// Upper
-								array[tk-1][tl] += 2;
+								array[tk-1][tl] += licz;
 								tk = tk-1;
 							}
 							else if ( tk+1 < height && array[tk+1][tl] == 1 ) {						// Lower
-								array[tk+1][tl] += 2;
+								array[tk+1][tl] += licz;
 								tk = tk+1;
 							}
 							else {
@@ -515,32 +515,25 @@ public class Recognizer {
 						iter++;
 						
 					}
-					while ( flag != true && iter < 100);		// zakladam, ze robimy okrazenie i wyladujemy w tym samym punkcie, iter mozna bedzie wyrzucic
-					System.out.println("Koniec parsowania: " + tl + ". " + tk);
+					while ( flag != true && iter < 100);		// if we are int the start point we found ellipse
 					
 					this.ellipses.add(e);
 				}
 			}
 		}
-		for (int j = 0; j < pa.getWidth(); j++) {
-			System.out.println();
-		    for (int k = 0; k < pa.getHeight(); k++) {
-		        System.out.print(array[j][k]);
-		    }
-		}
-		System.out.println("\nRozpoczeto parsowanie: " + licz + " razy.");
+		System.out.println("\nZnaleziono " + licz + " elipsy.");
 	}
 
-		/**
+	/**
 	 * Metoda do przesuwania prostokata
 	 * 
-	 * @param r obiekt przesuwanego prostokata, moze trzeba bedzie dodac jakis parametr do obiektu, ktory go zidentyfikuje?
+	 * @param index numer przesuwanego prostokata zgodnie z oznaczeniem na obrazku
 	 * @param moveX przesuniecie o x
-	 * @param moveY przesuniecie o y
+	 * @param moveY przesuniecie o y ( dla ulatwienia punkt (0,0) znajduje siê w lewym dolnym rogu ekranu
 	 */
 	public void moveRectangle( int index, int moveX, int moveY ) {
-		Shape s = prostokaty.get(index);
-		Rectangle r = rectangles.get(index);
+		Shape s = prostokaty.get(index-2);
+		Rectangle r = rectangles.get(index-2);
 		
 		moveY = -moveY;		// for natural moving
 		
@@ -551,10 +544,10 @@ public class Recognizer {
  		}
  		
  		for ( Point p : s.lst ) {
- 			array[p.k][p.l] -= 2;
+ 			array[p.k][p.l] -= (index);
  			p.k += moveY;
 			p.l += moveX;
-			array[p.k][p.l] += 2;
+			array[p.k][p.l] += (index);
 		}
  		
 		r.lowerRightCorner.k += moveY;
@@ -568,8 +561,15 @@ public class Recognizer {
 		s.minW = r.upperLeftCorner.l;
 	}
 	
+	/**
+	 * Metoda do przesuwania elipsy
+	 * 
+	 * @param index numer przesuwanej elipsy zgodnie z oznaczeniem na obrazku
+	 * @param moveX przesuniecie o x
+	 * @param moveY przesuniecie o y ( dla ulatwienia punkt (0,0) znajduje siê w lewym dolnym rogu ekranu
+	 */
  	public void moveEllipse( int index, int moveX, int moveY ) {
- 		Shape s = this.ellipses.get(index);
+ 		Shape s = this.ellipses.get(index-2);
  		
  		moveY = -moveY;		// for natural moving
  		
@@ -580,10 +580,10 @@ public class Recognizer {
  		}
  		
  		for ( Point p : s.lst ) {
- 			array[p.k][p.l] -= 3;
+ 			array[p.k][p.l] -= index;
  			p.k += moveY;
 			p.l += moveX;
-			array[p.k][p.l] += 3;
+			array[p.k][p.l] += index;
 		}
  		
  		s.maxH += moveY;
@@ -596,8 +596,6 @@ public class Recognizer {
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
-			//System.out.println("\nParsing: ");
-			//pul.printPoint();
 			int ill = findL(ll, pul.l);
 			if( ill != -1 ) {
 				pll = ll.get(ill);
@@ -610,7 +608,6 @@ public class Recognizer {
 						Point pur = ur.get(iur.get(x));
 						Point plr = lr.get(ilr.get(y));
 						if ( pur.l == plr.l ) {
-							// debugging, remove.
 							System.out.println("\nZnaleziono prostokat");
 							pul.printPoint();
 							pur.printPoint();
@@ -642,21 +639,22 @@ public class Recognizer {
 	 */
 	private void colorRectangle( Rectangle r ) {
 		Shape s = new Shape();
+		int index = this.prostokaty.size() + 1;		// nie mozemy miec 1 bo zaburzy to rozpoznawanie elips
 		
 		// UL -> LL 18
 		// UR -> LR
 		for ( int i = r.upperLeftCorner.k; i <= r.lowerRightCorner.k; i++ ) {
-			array[i][r.upperLeftCorner.l]  += 1;
+			array[i][r.upperLeftCorner.l]  += index;
 			s.addPure(i,r.upperLeftCorner.l);
-			array[i][r.lowerRightCorner.l] += 1;
+			array[i][r.lowerRightCorner.l] += index;
 			s.addPure(i, r.lowerRightCorner.l);
 		}
 		// UL -> UR 14
 		// LL -> LR
 		for ( int i = r.upperLeftCorner.l + 1; i < r.lowerRightCorner.l; i++ ) { // zmienione warunki zeby nie powtarzac
-			array[r.upperLeftCorner.k][i]  += 1;
+			array[r.upperLeftCorner.k][i]  += index;
 			s.addPure(r.upperLeftCorner.k, i);
-			array[r.lowerRightCorner.k][i] += 1;
+			array[r.lowerRightCorner.k][i] += index;
 			s.addPure(r.lowerRightCorner.k, i);
 		}
 		
@@ -754,17 +752,11 @@ public class Recognizer {
 		System.out.println("Found unused LR corners");
 		printList(lr);
 		
-		moveEllipse(3, 0, 1);
-		moveEllipse(2,50,0);
-		moveRectangle(0, 84, 0);
-		
 		for (int j = 0; j < pa.getWidth(); j++) {
 			System.out.println();
 		    for (int k = 0; k < pa.getHeight(); k++) {
 		        System.out.print(array[j][k]);
 		    }
 		}
-		
-		findIntersections();
 	}
 }
