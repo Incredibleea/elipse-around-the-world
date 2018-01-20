@@ -579,7 +579,7 @@ public class Recognizer {
 						iter++;
 						
 					}
-					while ( flag != true && iter < 100);		// if we are int the start point we found ellipse
+					while ( flag != true && iter < 1000);		// if we are int the start point we found ellipse
 					
 					this.ellipses.add(e);
 				}
