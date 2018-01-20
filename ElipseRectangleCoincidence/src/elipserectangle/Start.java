@@ -13,7 +13,7 @@ public class Start {
 	/**
 	 * Metoda glowna klasy Start.
 	 * 
-	 * @param args
+	 * @param args argumenty startowe
 	 */
 	public static void main(String[] args) {
 		PixelArray p = PixelArray.getInstance();
@@ -25,7 +25,7 @@ public class Start {
 		
 		r.moveEllipse(3, 4, 4);
 		r.moveEllipse(2,4,7);
-		r.moveRectangle(3, -3, 4);
+		r.moveRectangle(3, 20, -40);
 		
 		r.findIntersections();
 		

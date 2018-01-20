@@ -196,8 +196,6 @@ public class Recognizer {
 	 * Metoda sprawdza przeciecia / stycznosci / zawierania pomiedzy poszczegolnymi figurami.
 	 */
 	public void findIntersections() {
-		int flag = 0;
-		
 		/*
 		 * Przeciecia / stycznosci / zawierania miedzy prostokatami
 		 */
@@ -367,7 +365,7 @@ public class Recognizer {
 								 ( tk+1 == k && tl-1 == l ) ||
 								 ( tk == k && tl - 1 == l ))) {
 								flag = true;
-								System.out.println("Znaleziono elipse: " + tl + ", " +  tk);
+//								System.out.println("Znaleziono elipse: " + tl + ", " +  tk);
 								break;
 							}
 						
@@ -587,13 +585,13 @@ public class Recognizer {
 				}
 			}
 		}
-		System.out.println("\nZnaleziono " + licz + " elipsy.");
+		System.out.println("Znaleziono " + licz + " elipsy.\n");
 	}
 
 	/**
 	 * Metoda odpowiedzialna za zmiane polozenia prostokata.
 	 * 
-	 * @param r referencja do obiektu klasy Rectangle
+	 * @param index prostokata
 	 * @param moveX przesuniecie o x
 	 * @param moveY przesuniecie o y
 	 */
@@ -605,7 +603,7 @@ public class Recognizer {
 		
  		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
  			 (s.minH + moveY < 0) || (s.maxH + moveY >= height) ) {
- 			System.out.println("WARNING! Cannot move recatngle");
+ 			System.out.println("UWAGA! Nie mozna przesunac tego prostokata!");
  			return;
  		}
  		
@@ -630,7 +628,7 @@ public class Recognizer {
 	/**
 	 * Metoda odpowiedzialna za zmiane polozenia elipsy.
 	 * 
-	 * @param s referencja do obiektu klasy Shape
+	 * @param index figury
 	 * @param moveX przesuniecie o x
 	 * @param moveY przesuniecie o y
 	 */
@@ -641,7 +639,7 @@ public class Recognizer {
  		
  		if ( (s.minW + moveX < 0) || (s.maxW + moveX >= width) ||
  			 (s.minH + moveY < 0) || (s.maxH + moveY >= height) ) {
- 			System.out.println("WARNING! Cannot move ellipse");
+ 			System.out.println("UWAGA! Nie mozna przesunac tej elipsy");
  			return;
  		}
  		
@@ -662,6 +660,9 @@ public class Recognizer {
  	 * Metoda wykonuje operacje potrzebne do zaznaczenia i rozpoznania prostokatow.
  	 */
 	private void markEdges() {
+		
+		int licz = 0;
+		
 		for ( int i = 0 ; i < ul.size(); i++) {
 			Point pul = ul.get(i);
 			Point pll;
@@ -677,15 +678,16 @@ public class Recognizer {
 						Point pur = ur.get(iur.get(x));
 						Point plr = lr.get(ilr.get(y));
 						if ( pur.l == plr.l ) {
-							System.out.println("\nZnaleziono prostokat");
-							pul.printPoint();
-							pur.printPoint();
-							pll.printPoint();
-							plr.printPoint();
+//							System.out.println("\nZnaleziono prostokat");
+//							pul.printPoint();
+//							pur.printPoint();
+//							pll.printPoint();
+//							plr.printPoint();
 							
 							Rectangle r = new Rectangle(pul, plr);
 							colorRectangle(r);
 							rectangles.add(r);
+							licz+=1;
 														
 							ul.remove(i);
 							ur.remove((int)iur.get(x));
@@ -700,6 +702,7 @@ public class Recognizer {
 				}
 			}
 		}
+		System.out.println("\n\nZnaleziono " + licz + " prostokaty.");
 	}
 	
 	/**
@@ -829,7 +832,9 @@ public class Recognizer {
 	 * Metoda wypisuje liste punktow.
 	 * 
 	 * @param l lista punktow
+	 * 
 	 */
+	@SuppressWarnings("unused")
 	private void printList(List<Point> l) {
 		System.out.println();
 		for ( Point p : l ) {
@@ -861,14 +866,14 @@ public class Recognizer {
 	 * Metoda uzywana do wypisywania zmian.
 	 */
 	public void print() {
-		System.out.println("\nFound unused UL corners");
-		printList(ul);
-		System.out.println("Found unused UR corners");
-		printList(ur);
-		System.out.println("Found unused LL corners");
-		printList(ll);
-		System.out.println("Found unused LR corners");
-		printList(lr);
+//		System.out.println("\nFound unused UL corners");
+//		printList(ul);
+//		System.out.println("Found unused UR corners");
+//		printList(ur);
+//		System.out.println("Found unused LL corners");
+//		printList(ll);
+//		System.out.println("Found unused LR corners");
+//		printList(lr);
 		
 		for (int j = 0; j < pa.getWidth(); j++) {
 			System.out.println();
